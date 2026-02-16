@@ -3,60 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Berezhany Weather Master v19.0</title>
+    <title>Бережани Weather Master v21.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --blue: #8ab4f8; --amber: #ff9800; --bg: #0b1120; --glass: rgba(255, 255, 255, 0.05); }
+        
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; padding: 20px 10px; overflow-x: hidden; }
         
+        /* Сніг на фоні */
         .snow-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background: url('https://www.transparenttextures.com/patterns/snow.png'); animation: snowFall 25s linear infinite; opacity: 0.15; z-index: 1; }
         @keyframes snowFall { from { background-position: 0 0; } to { background-position: 500px 1000px; } }
 
-        .app { position: relative; z-index: 10; width: 100%; max-width: 500px; background: rgba(25, 25, 30, 0.98); border-radius: 30px; padding: 25px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 50px rgba(0,0,0,0.6); }
+        .app-card { position: relative; z-index: 10; width: 100%; max-width: 500px; background: rgba(25, 25, 30, 0.98); backdrop-filter: blur(20px); border-radius: 30px; padding: 25px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 50px rgba(0,0,0,0.6); transition: 0.5s; }
         
-        /* ПУЛЬСУЮЧЕ ПОПЕРЕДЖЕННЯ */
+        /* Amber Alert Пульсація */
         .storm-warning { border-color: var(--amber) !important; animation: warning-glow 2s infinite; }
         @keyframes warning-glow { 0%, 100% { box-shadow: 0 0 10px rgba(255, 152, 0, 0.2); } 50% { box-shadow: 0 0 30px rgba(255, 152, 0, 0.5); border-color: var(--amber); } }
 
+        /* Шапка */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .refresh-btn { background: rgba(255,255,255,0.1); border: none; color: white; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* Поради */
         .advice-box { background: rgba(138, 180, 248, 0.1); padding: 15px; border-radius: 18px; border-left: 5px solid var(--blue); margin-bottom: 20px; font-size: 0.88rem; line-height: 1.4; }
         .storm-warning .advice-box { border-left-color: var(--amber); background: rgba(255, 152, 0, 0.1); }
 
-        /* АСТРОНОМІЯ З ПОВНИМИ ПІДПИСАМИ */
+        /* Астрономія */
         .astro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         .astro-item { background: var(--glass); padding: 12px; border-radius: 15px; font-size: 0.75rem; line-height: 1.5; }
         .astro-item b { color: var(--blue); display: block; margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px; }
-        .astro-item i { color: #f1c40f; margin-right: 5px; }
 
+        /* Головна секція */
         .hero { display: flex; align-items: center; gap: 20px; margin: 15px 0; }
         .temp-main { font-size: 5rem; font-weight: 200; letter-spacing: -3px; }
+        .main-icon { font-size: 3.5rem; color: var(--blue); animation: breathe 4s infinite; }
+        @keyframes breathe { 50% { opacity: 0.6; transform: scale(1.05); } }
 
-        .press-box { background: rgba(0,0,0,0.25); border-radius: 20px; padding: 15px; margin: 15px 0; font-size: 0.8rem; }
+        /* Тиск */
+        .press-box { background: rgba(0,0,0,0.25); border-radius: 20px; padding: 15px; margin: 20px 0; font-size: 0.8rem; }
         .press-line { width: 100%; height: 35px; stroke: var(--blue); stroke-width: 2.5; fill: none; }
 
+        /* Вкладки */
         .tabs { display: flex; justify-content: flex-end; gap: 8px; border-bottom: 1px solid #333; padding-bottom: 12px; margin-bottom: 20px; }
         .tab-btn { background: none; border: 1px solid #444; color: #888; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 0.82rem; }
         .tab-btn.active { background: var(--blue); color: black; border-color: var(--blue); font-weight: bold; }
         .storm-warning .tab-btn.active { background: var(--amber); border-color: var(--amber); }
 
+        /* Погодинний список */
         .hourly { display: flex; overflow-x: auto; gap: 25px; padding-bottom: 15px; scrollbar-width: none; }
+        .hourly::-webkit-scrollbar { display: none; }
         .h-card { text-align: center; min-width: 65px; }
 
+        /* Тиждень */
         .weekly { background: rgba(0,0,0,0.2); border-radius: 25px; padding: 10px 15px; margin-top: 20px; }
         .w-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #333; font-size: 0.85rem; }
+        .w-row:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
     <div class="snow-overlay"></div>
 
-    <div class="app" id="weather-card">
-        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-            <div><b style="font-size:1.1rem;">Бережани (LIVE)</b><br><small style="opacity:0.6;">Понеділок, 16 лютого</small></div>
-            <button style="background:rgba(255,255,255,0.1); border:none; color:white; width:40px; height:40px; border-radius:50%; cursor:pointer;" onclick="location.reload()"><i class="fa-solid fa-rotate"></i></button>
+    <div class="app-card" id="weather-card">
+        <div class="header">
+            <div><b style="font-size:1.1rem;">Бережани</b><br><small id="current-date-label" style="opacity:0.6;">Понеділок, 16 лютого</small></div>
+            <button class="refresh-btn" onclick="location.reload()"><i class="fa-solid fa-rotate"></i></button>
         </div>
 
         <div class="advice-box" id="advice-msg">Завантаження...</div>
 
-        <div class="astro-row astro-grid">
+        <div class="astro-grid">
             <div class="astro-item">
                 <b><i class="fa-solid fa-sun"></i> Сонце</b>
                 Схід Сонця: 07:27<br>Захід Сонця: 17:40
@@ -68,16 +83,16 @@
         </div>
 
         <div class="hero">
-            <div class="temp-main">-11°</div>
-            <i class="fa-solid fa-cloud-moon" style="font-size:3.5rem; color:var(--blue);"></i>
+            <div class="temp-main" id="m-temp">--°</div>
+            <i class="fa-solid fa-cloud-moon main-icon" id="main-icon"></i>
         </div>
-        <div style="font-size: 1.3rem; margin-bottom: 5px;">Ясно</div>
-        <div style="font-size: 0.85rem; opacity: 0.7;">Відчувається як -16° • Вологість 86%</div>
+        <div id="condition-text" style="font-size: 1.3rem; margin-bottom: 5px;">Аналіз...</div>
+        <div style="font-size: 0.85rem; opacity: 0.7;">Відчувається як -16° • Тиск 726 мм</div>
 
         <div class="press-box">
             <div style="display:flex; justify-content:space-between; opacity:0.8; margin-bottom:8px;">
-                <span><i class="fa-solid fa-gauge-high"></i> Тиск: 726 мм рт.ст.</span>
-                <span style="color:var(--blue)">Стабільно</span>
+                <span><i class="fa-solid fa-gauge-high"></i> Графік тиску</span>
+                <span style="color:var(--blue)">726 мм рт.ст.</span>
             </div>
             <svg class="press-line" viewBox="0 0 200 40"><path d="M0,25 Q50,25 100,25 T200,25" /></svg>
         </div>
@@ -90,7 +105,7 @@
 
         <div class="hourly" id="hour-list"></div>
 
-        <div style="margin: 25px 0 10px; font-weight: bold; color: var(--blue); font-size: 0.9rem;">ПРОГНОЗ НА 7 ДНІВ</div>
+        <div style="margin: 25px 0 10px; font-weight: bold; color: var(--blue); font-size: 0.9rem;">ПРОГНОЗ НА ТИЖДЕНЬ</div>
         <div class="weekly" id="week-list"></div>
     </div>
 
@@ -105,8 +120,8 @@
         };
 
         const week = [
-            {d: "Пн", i: "fa-sun", t: "Ясно", temp: "-4°/-12°"},
-            {d: "Вт", i: "fa-cloud-sun", t: "Мінлива", temp: "-3°/-10°"},
+            {d: "Пн", i: "fa-sun", t: "Ясно", temp: "-4°/-11°"},
+            {d: "Вт", i: "fa-cloud-sun", t: "Мінлива", temp: "-3°/-9°"},
             {d: "Ср", i: "fa-sun", t: "Ясно", temp: "-2°/-7°"},
             {d: "Чт", i: "fa-snowflake", t: "Сніг", temp: "-1°/-5°"},
             {d: "Пт", i: "fa-cloud", t: "Хмарно", temp: "-4°/-8°"},
@@ -114,9 +129,44 @@
             {d: "Нд", i: "fa-cloud-rain", t: "Дощ", temp: "0°/-4°"}
         ];
 
+        function updateLiveDisplay() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            let closestIdx = 0;
+            let minDiff = 24;
+
+            weather.h.forEach((hStr, i) => {
+                const h = parseInt(hStr.split(':')[0]);
+                const diff = Math.abs(currentHour - h);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestIdx = i;
+                }
+            });
+
+            // Оновлюємо цифри
+            document.getElementById('m-temp').innerText = weather.t[closestIdx] + "°";
+            document.getElementById('condition-text').innerText = weather.pType[closestIdx];
+
+            // Динамічна порада
+            const adviceEl = document.getElementById('advice-msg');
+            const card = document.getElementById('weather-card');
+            
+            if (weather.t[closestIdx] <= -10) {
+                adviceEl.innerHTML = "<b>УВАГА:</b> Сильний мороз! Одягайтеся тепло, дороги слизькі після снігопаду.";
+                card.classList.add('storm-warning');
+            } else if (weather.pPct[closestIdx] > 50) {
+                adviceEl.innerHTML = "<b>ПОПЕРЕДЖЕННЯ:</b> Очікуються опади. Візьміть парасольку та будьте обережні.";
+                card.classList.add('storm-warning');
+            } else {
+                adviceEl.innerText = "Погода стабільна. Гарного дня у Бережанах!";
+                card.classList.remove('storm-warning');
+            }
+        }
+
         function setTab(mode, btn) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            if(btn) btn.classList.add('active');
             const list = document.getElementById('hour-list');
             list.innerHTML = '';
 
@@ -138,22 +188,23 @@
         }
 
         window.onload = () => {
-            let advice = "<b>Порада:</b> Сьогодні у Бережанах сильний мороз. Рекомендуємо термобілизну та теплий одяг. Дороги дуже слизькі через вчорашній снігопад.";
-            document.getElementById('advice-msg').innerHTML = advice;
-            
-            // Вмикаємо пульсацію при сильному морозі
-            if(weather.t[0] <= -10) { document.getElementById('weather-card').classList.add('storm-warning'); }
-
+            updateLiveDisplay();
+            // Рендер тижня
             const weekDiv = document.getElementById('week-list');
             week.forEach(d => {
                 weekDiv.innerHTML += `<div class="w-row">
-                    <span style="font-weight:600; width:35px;">${d.d}</span>
-                    <i class="fa-solid ${d.i}" style="color:var(--blue); width:25px; text-align:center;"></i>
-                    <span style="flex:1; padding-left:15px; font-size:0.8rem; opacity:0.8;">${d.t}</span>
-                    <span><b>${d.temp}</b></span>
+                    <span style="width:30px; font-weight:bold;">${d.d}</span>
+                    <div style="flex:1; display:flex; align-items:center; gap:10px; padding-left:15px;">
+                        <i class="fa-solid ${d.i}" style="color:var(--blue); width:20px; text-align:center;"></i>
+                        <span style="opacity:0.7; font-size:0.8rem;">${d.t}</span>
+                    </div>
+                    <span style="font-weight:bold;">${d.temp}</span>
                 </div>`;
             });
             setTab('temp', document.querySelector('.tab-btn'));
+            
+            // Оновлення кожну хвилину
+            setInterval(updateLiveDisplay, 60000);
         };
     </script>
 </body>
