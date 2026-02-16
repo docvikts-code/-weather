@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Бережани Weather Live</title>
+    <title>Бережани Weather Live v23.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="manifest" href="manifest.json">
     <style>
@@ -17,7 +17,7 @@
         @keyframes warning-glow { 50% { box-shadow: 0 0 30px rgba(255, 152, 0, 0.5); border-color: var(--amber); } }
 
         .header { display: flex; justify-content: space-between; margin-bottom: 15px; }
-        .refresh-btn { background: rgba(255,255,255,0.1); border: none; color: white; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; }
+        .refresh-btn { background: rgba(255,255,255,0.1); border: none; color: white; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .refresh-btn i.rotating { animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -30,12 +30,12 @@
         .temp-main { font-size: 5rem; font-weight: 200; }
         .main-icon { font-size: 3.5rem; color: var(--blue); }
 
-        .press-box { background: rgba(0,0,0,0.25); border-radius: 20px; padding: 15px; margin: 20px 0; font-size: 0.8rem; }
         .tabs { display: flex; justify-content: flex-end; gap: 8px; border-bottom: 1px solid #333; padding-bottom: 12px; margin-bottom: 20px; }
-        .tab-btn { background: none; border: 1px solid #444; color: #888; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 0.82rem; }
-        .tab-btn.active { background: var(--blue); color: black; font-weight: bold; }
+        .tab-btn { background: none; border: 1px solid #444; color: #888; padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; }
+        .tab-btn.active { background: var(--blue); color: black; font-weight: bold; border-color: var(--blue); }
 
         .hourly { display: flex; overflow-x: auto; gap: 25px; padding-bottom: 15px; scrollbar-width: none; }
+        .hourly::-webkit-scrollbar { display: none; }
         .h-card { text-align: center; min-width: 65px; }
         .weekly { background: rgba(0,0,0,0.2); border-radius: 25px; padding: 10px 15px; }
         .w-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #333; font-size: 0.85rem; }
@@ -45,13 +45,13 @@
     <div class="snow-overlay"></div>
     <div class="app-card" id="weather-card">
         <div class="header">
-            <div><b>Бережани</b><br><small id="cur-date" style="opacity:0.6;">Завантаження...</small></div>
+            <div><b>Бережани (Live)</b><br><small id="cur-date" style="opacity:0.6;">Оновлення...</small></div>
             <button class="refresh-btn" onclick="fetchWeatherData()"><i id="sync-icon" class="fa-solid fa-rotate"></i></button>
         </div>
-        <div class="advice-box" id="advice">Отримую дані з метеостанції...</div>
+        <div class="advice-box" id="advice">Отримую дані...</div>
         <div class="astro-grid">
             <div class="astro-item"><b>🌅 Сонце</b>Схід: <span id="sunrise">--:--</span><br>Захід: <span id="sunset">--:--</span></div>
-            <div class="astro-item"><b>🌙 Місяць</b>Фаза: <span id="moon">--</span><br>Тиск: <span id="press-val">--</span></div>
+            <div class="astro-item"><b>🌙 Місяць</b>Тиск: <span id="press-val">--</span><br>Вологість: <span id="hum-val">--</span></div>
         </div>
         <div class="hero">
             <div class="temp-main" id="m-temp">--°</div>
@@ -59,12 +59,15 @@
         </div>
         <div id="m-desc" style="font-size: 1.3rem; margin-bottom: 5px;">--</div>
         <div style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 20px;">
-            Відчувається як <span id="feels-like">--</span> • Вітер <span id="wind-main">--</span> м/с
+            Відчувається як <span id="feels-like">--</span> • Вітер <span id="wind-main">--</span> км/год
         </div>
+        
         <div class="tabs">
             <button class="tab-btn active" onclick="renderHourly('temp', this)">Температура</button>
             <button class="tab-btn" onclick="renderHourly('precip', this)">Опади</button>
+            <button class="tab-btn" onclick="renderHourly('wind', this)">Вітер</button>
         </div>
+        
         <div class="hourly" id="hour-list"></div>
         <div style="margin: 25px 0 10px; font-weight: bold; color: var(--blue); font-size: 0.9rem;">ПРОГНОЗ НА ТИЖДЕНЬ</div>
         <div class="weekly" id="week-list"></div>
@@ -86,12 +89,12 @@
             const icon = document.getElementById('sync-icon');
             icon.classList.add('rotating');
             try {
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=49.4452&longitude=24.9332&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,surface_pressure,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto`;
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=49.4452&longitude=24.9332&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,surface_pressure,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto`;
                 const response = await fetch(url);
                 rawData = await response.json();
                 updateUI();
             } catch (e) {
-                document.getElementById('advice').innerText = "Помилка зв'язку з супутником.";
+                document.getElementById('advice').innerText = "Помилка мережі.";
             }
             setTimeout(() => icon.classList.remove('rotating'), 1000);
         }
@@ -105,53 +108,14 @@
             document.getElementById('m-temp').innerText = Math.round(cur.temperature_2m) + "°";
             document.getElementById('feels-like').innerText = Math.round(cur.apparent_temperature) + "°";
             document.getElementById('press-val').innerText = Math.round(cur.surface_pressure * 0.75006) + " мм";
+            document.getElementById('hum-val').innerText = cur.relative_humidity_2m + "%";
             document.getElementById('m-desc').innerText = code.t;
             document.getElementById('m-icon').className = `fa-solid ${code.i} main-icon`;
             document.getElementById('wind-main').innerText = Math.round(cur.wind_speed_10m);
             document.getElementById('sunrise').innerText = daily.sunrise[0].split('T')[1];
             document.getElementById('sunset').innerText = daily.sunset[0].split('T')[1];
 
-            // Amber Alert logic
             const card = document.getElementById('weather-card');
             if (cur.temperature_2m < -10 || cur.weather_code >= 71) {
                 card.classList.add('storm-warning');
-                document.getElementById('advice').innerHTML = "<b>УВАГА:</b> Складні погодні умови! Будьте обережні.";
-            } else {
-                card.classList.remove('storm-warning');
-                document.getElementById('advice').innerText = "У Бережанах погода спокійна. Гарного дня!";
-            }
-
-            // Week
-            const wList = document.getElementById('week-list');
-            wList.innerHTML = '';
-            for(let i=0; i<7; i++) {
-                const dayCode = weatherCodes[daily.weather_code[i]] || {t: "Хмарно", i: "fa-cloud"};
-                wList.innerHTML += `<div class="w-row">
-                    <span style="width:35px;">${new Date(daily.time[i]).toLocaleDateString('uk-UA', {weekday: 'short'})}</span>
-                    <i class="fa-solid ${dayCode.i}" style="color:var(--blue); width:20px;"></i>
-                    <span style="flex:1; margin-left:15px; opacity:0.7;">${dayCode.t}</span>
-                    <b>${Math.round(daily.temperature_2m_max[i])}° / ${Math.round(daily.temperature_2m_min[i])}°</b>
-                </div>`;
-            }
-            renderHourly('temp', document.querySelector('.tab-btn'));
-        }
-
-        function renderHourly(mode, btn) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const list = document.getElementById('hour-list');
-            list.innerHTML = '';
-            const now = new Date().getHours();
-            
-            for(let i=now; i<now+12; i++) {
-                const time = rawData.hourly.time[i].split('T')[1];
-                const hCode = weatherCodes[rawData.hourly.weather_code[i]] || {i: "fa-cloud"};
-                let val = mode === 'temp' ? `<b>${Math.round(rawData.hourly.temperature_2m[i])}°</b>` : `<span style="color:var(--blue); font-weight:bold;">${rawData.hourly.precipitation_probability[i]}%</span>`;
-                list.innerHTML += `<div class="h-card"><div>${time}</div><i class="fa-solid ${hCode.i}" style="margin:8px 0; color:var(--blue); opacity:0.6;"></i><br>${val}</div>`;
-            }
-        }
-
-        window.onload = fetchWeatherData;
-    </script>
-</body>
-</html>
+                document.getElementById('advice').innerHTML = "<b>УВАГА:</b> Складні умови! Бережіть себе на доро
