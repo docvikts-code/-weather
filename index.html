@@ -3,214 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Бережани Weather Master v21.0</title>
-    <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b1120">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Бережани Weather Live</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
     <style>
         :root { --blue: #8ab4f8; --amber: #ff9800; --bg: #0b1120; --glass: rgba(255, 255, 255, 0.05); }
-        
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; padding: 20px 10px; overflow-x: hidden; }
-        
-        /* Сніг на фоні */
         .snow-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background: url('https://www.transparenttextures.com/patterns/snow.png'); animation: snowFall 25s linear infinite; opacity: 0.15; z-index: 1; }
         @keyframes snowFall { from { background-position: 0 0; } to { background-position: 500px 1000px; } }
 
-        .app-card { position: relative; z-index: 10; width: 100%; max-width: 500px; background: rgba(25, 25, 30, 0.98); backdrop-filter: blur(20px); border-radius: 30px; padding: 25px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 50px rgba(0,0,0,0.6); transition: 0.5s; }
-        
-        /* Amber Alert Пульсація */
+        .app-card { position: relative; z-index: 10; width: 100%; max-width: 500px; background: rgba(25, 25, 30, 0.98); backdrop-filter: blur(20px); border-radius: 30px; padding: 25px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 50px rgba(0,0,0,0.6); }
         .storm-warning { border-color: var(--amber) !important; animation: warning-glow 2s infinite; }
-        @keyframes warning-glow { 0%, 100% { box-shadow: 0 0 10px rgba(255, 152, 0, 0.2); } 50% { box-shadow: 0 0 30px rgba(255, 152, 0, 0.5); border-color: var(--amber); } }
+        @keyframes warning-glow { 50% { box-shadow: 0 0 30px rgba(255, 152, 0, 0.5); border-color: var(--amber); } }
 
-        /* Шапка */
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-        .refresh-btn { background: rgba(255,255,255,0.1); border: none; color: white; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .refresh-btn { background: rgba(255,255,255,0.1); border: none; color: white; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; }
+        .refresh-btn i.rotating { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Поради */
         .advice-box { background: rgba(138, 180, 248, 0.1); padding: 15px; border-radius: 18px; border-left: 5px solid var(--blue); margin-bottom: 20px; font-size: 0.88rem; line-height: 1.4; }
-        .storm-warning .advice-box { border-left-color: var(--amber); background: rgba(255, 152, 0, 0.1); }
-
-        /* Астрономія */
         .astro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .astro-item { background: var(--glass); padding: 12px; border-radius: 15px; font-size: 0.75rem; line-height: 1.5; }
-        .astro-item b { color: var(--blue); display: block; margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px; }
+        .astro-item { background: var(--glass); padding: 12px; border-radius: 15px; font-size: 0.75rem; }
+        .astro-item b { color: var(--blue); display: block; margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); }
 
-        /* Головна секція */
         .hero { display: flex; align-items: center; gap: 20px; margin: 15px 0; }
-        .temp-main { font-size: 5rem; font-weight: 200; letter-spacing: -3px; }
-        .main-icon { font-size: 3.5rem; color: var(--blue); animation: breathe 4s infinite; }
-        @keyframes breathe { 50% { opacity: 0.6; transform: scale(1.05); } }
+        .temp-main { font-size: 5rem; font-weight: 200; }
+        .main-icon { font-size: 3.5rem; color: var(--blue); }
 
-        /* Тиск */
         .press-box { background: rgba(0,0,0,0.25); border-radius: 20px; padding: 15px; margin: 20px 0; font-size: 0.8rem; }
-        .press-line { width: 100%; height: 35px; stroke: var(--blue); stroke-width: 2.5; fill: none; }
-
-        /* Вкладки */
         .tabs { display: flex; justify-content: flex-end; gap: 8px; border-bottom: 1px solid #333; padding-bottom: 12px; margin-bottom: 20px; }
         .tab-btn { background: none; border: 1px solid #444; color: #888; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 0.82rem; }
-        .tab-btn.active { background: var(--blue); color: black; border-color: var(--blue); font-weight: bold; }
-        .storm-warning .tab-btn.active { background: var(--amber); border-color: var(--amber); }
+        .tab-btn.active { background: var(--blue); color: black; font-weight: bold; }
 
-        /* Погодинний список */
         .hourly { display: flex; overflow-x: auto; gap: 25px; padding-bottom: 15px; scrollbar-width: none; }
-        .hourly::-webkit-scrollbar { display: none; }
         .h-card { text-align: center; min-width: 65px; }
-
-        /* Тиждень */
-        .weekly { background: rgba(0,0,0,0.2); border-radius: 25px; padding: 10px 15px; margin-top: 20px; }
+        .weekly { background: rgba(0,0,0,0.2); border-radius: 25px; padding: 10px 15px; }
         .w-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #333; font-size: 0.85rem; }
-        .w-row:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
     <div class="snow-overlay"></div>
-
     <div class="app-card" id="weather-card">
         <div class="header">
-            <div><b style="font-size:1.1rem;">Бережани</b><br><small id="current-date-label" style="opacity:0.6;">Понеділок, 16 лютого</small></div>
-            <button class="refresh-btn" onclick="location.reload()"><i class="fa-solid fa-rotate"></i></button>
+            <div><b>Бережани</b><br><small id="cur-date" style="opacity:0.6;">Завантаження...</small></div>
+            <button class="refresh-btn" onclick="fetchWeatherData()"><i id="sync-icon" class="fa-solid fa-rotate"></i></button>
         </div>
-
-        <div class="advice-box" id="advice-msg">Завантаження...</div>
-
+        <div class="advice-box" id="advice">Отримую дані з метеостанції...</div>
         <div class="astro-grid">
-            <div class="astro-item">
-                <b><i class="fa-solid fa-sun"></i> Сонце</b>
-                Схід Сонця: 07:27<br>Захід Сонця: 17:40
-            </div>
-            <div class="astro-item">
-                <b><i class="fa-solid fa-moon"></i> Місяць (14%)</b>
-                Схід Місяця: 02:15<br>Захід Місяця: 11:40
-            </div>
+            <div class="astro-item"><b>🌅 Сонце</b>Схід: <span id="sunrise">--:--</span><br>Захід: <span id="sunset">--:--</span></div>
+            <div class="astro-item"><b>🌙 Місяць</b>Фаза: <span id="moon">--</span><br>Тиск: <span id="press-val">--</span></div>
         </div>
-
         <div class="hero">
             <div class="temp-main" id="m-temp">--°</div>
-            <i class="fa-solid fa-cloud-moon main-icon" id="main-icon"></i>
+            <i class="fa-solid fa-cloud main-icon" id="m-icon"></i>
         </div>
-        <div id="condition-text" style="font-size: 1.3rem; margin-bottom: 5px;">Аналіз...</div>
-        <div style="font-size: 0.85rem; opacity: 0.7;">Відчувається як -16° • Тиск 726 мм</div>
-
-        <div class="press-box">
-            <div style="display:flex; justify-content:space-between; opacity:0.8; margin-bottom:8px;">
-                <span><i class="fa-solid fa-gauge-high"></i> Графік тиску</span>
-                <span style="color:var(--blue)">726 мм рт.ст.</span>
-            </div>
-            <svg class="press-line" viewBox="0 0 200 40"><path d="M0,25 Q50,25 100,25 T200,25" /></svg>
+        <div id="m-desc" style="font-size: 1.3rem; margin-bottom: 5px;">--</div>
+        <div style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 20px;">
+            Відчувається як <span id="feels-like">--</span> • Вітер <span id="wind-main">--</span> м/с
         </div>
-
         <div class="tabs">
-            <button class="tab-btn active" onclick="setTab('temp', this)">Температура</button>
-            <button class="tab-btn" onclick="setTab('precip', this)">Опади</button>
-            <button class="tab-btn" onclick="setTab('wind', this)">Вітер</button>
+            <button class="tab-btn active" onclick="renderHourly('temp', this)">Температура</button>
+            <button class="tab-btn" onclick="renderHourly('precip', this)">Опади</button>
         </div>
-
         <div class="hourly" id="hour-list"></div>
-
         <div style="margin: 25px 0 10px; font-weight: bold; color: var(--blue); font-size: 0.9rem;">ПРОГНОЗ НА ТИЖДЕНЬ</div>
         <div class="weekly" id="week-list"></div>
     </div>
 
     <script>
-        const weather = {
-            h: ["08:00","11:00","14:00","17:00","20:00","23:00"],
-            t: [-11, -7, -4, -6, -8, -10],
-            pPct: [0, 5, 5, 0, 0, 0],
-            pType: ["Ясно", "Хмарно", "Хмарно", "Ясно", "Ясно", "Ясно"],
-            pVol: [0, 2, 2, 0, 0, 0],
-            w: [12, 14, 15, 12, 10, 9]
+        const weatherCodes = {
+            0: {t: "Ясно", i: "fa-sun"}, 1: {t: "Переважно ясно", i: "fa-cloud-sun"},
+            2: {t: "Мінлива хмарність", i: "fa-cloud-sun"}, 3: {t: "Хмарно", i: "fa-cloud"},
+            45: {t: "Туман", i: "fa-smog"}, 48: {t: "Паморозь", i: "fa-smog"},
+            51: {t: "Мряка", i: "fa-cloud-rain"}, 61: {t: "Невеликий дощ", i: "fa-cloud-rain"},
+            71: {t: "Невеликий сніг", i: "fa-snowflake"}, 73: {t: "Сніг", i: "fa-snowflake"},
+            75: {t: "Сильний сніг", i: "fa-snowflake"}, 95: {t: "Гроза", i: "fa-bolt"}
         };
 
-        const week = [
-            {d: "Пн", i: "fa-sun", t: "Ясно", temp: "-4°/-11°"},
-            {d: "Вт", i: "fa-cloud-sun", t: "Мінлива", temp: "-3°/-9°"},
-            {d: "Ср", i: "fa-sun", t: "Ясно", temp: "-2°/-7°"},
-            {d: "Чт", i: "fa-snowflake", t: "Сніг", temp: "-1°/-5°"},
-            {d: "Пт", i: "fa-cloud", t: "Хмарно", temp: "-4°/-8°"},
-            {d: "Сб", i: "fa-sun", t: "Ясно", temp: "-1°/-10°"},
-            {d: "Нд", i: "fa-cloud-rain", t: "Дощ", temp: "0°/-4°"}
-        ];
+        let rawData = null;
 
-        function updateLiveDisplay() {
-            const now = new Date();
-            const currentHour = now.getHours();
-            let closestIdx = 0;
-            let minDiff = 24;
+        async function fetchWeatherData() {
+            const icon = document.getElementById('sync-icon');
+            icon.classList.add('rotating');
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=49.4452&longitude=24.9332&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,surface_pressure,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto`;
+                const response = await fetch(url);
+                rawData = await response.json();
+                updateUI();
+            } catch (e) {
+                document.getElementById('advice').innerText = "Помилка зв'язку з супутником.";
+            }
+            setTimeout(() => icon.classList.remove('rotating'), 1000);
+        }
 
-            weather.h.forEach((hStr, i) => {
-                const h = parseInt(hStr.split(':')[0]);
-                const diff = Math.abs(currentHour - h);
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    closestIdx = i;
-                }
-            });
+        function updateUI() {
+            const cur = rawData.current;
+            const daily = rawData.daily;
+            const code = weatherCodes[cur.weather_code] || {t: "Невідомо", i: "fa-cloud"};
 
-            // Оновлюємо цифри
-            document.getElementById('m-temp').innerText = weather.t[closestIdx] + "°";
-            document.getElementById('condition-text').innerText = weather.pType[closestIdx];
+            document.getElementById('cur-date').innerText = new Date().toLocaleDateString('uk-UA', {weekday: 'long', day: 'numeric', month: 'long'});
+            document.getElementById('m-temp').innerText = Math.round(cur.temperature_2m) + "°";
+            document.getElementById('feels-like').innerText = Math.round(cur.apparent_temperature) + "°";
+            document.getElementById('press-val').innerText = Math.round(cur.surface_pressure * 0.75006) + " мм";
+            document.getElementById('m-desc').innerText = code.t;
+            document.getElementById('m-icon').className = `fa-solid ${code.i} main-icon`;
+            document.getElementById('wind-main').innerText = Math.round(cur.wind_speed_10m);
+            document.getElementById('sunrise').innerText = daily.sunrise[0].split('T')[1];
+            document.getElementById('sunset').innerText = daily.sunset[0].split('T')[1];
 
-            // Динамічна порада
-            const adviceEl = document.getElementById('advice-msg');
+            // Amber Alert logic
             const card = document.getElementById('weather-card');
-            
-            if (weather.t[closestIdx] <= -10) {
-                adviceEl.innerHTML = "<b>УВАГА:</b> Сильний мороз! Одягайтеся тепло, дороги слизькі після снігопаду.";
+            if (cur.temperature_2m < -10 || cur.weather_code >= 71) {
                 card.classList.add('storm-warning');
-            } else if (weather.pPct[closestIdx] > 50) {
-                adviceEl.innerHTML = "<b>ПОПЕРЕДЖЕННЯ:</b> Очікуються опади. Візьміть парасольку та будьте обережні.";
-                card.classList.add('storm-warning');
+                document.getElementById('advice').innerHTML = "<b>УВАГА:</b> Складні погодні умови! Будьте обережні.";
             } else {
-                adviceEl.innerText = "Погода стабільна. Гарного дня у Бережанах!";
                 card.classList.remove('storm-warning');
+                document.getElementById('advice').innerText = "У Бережанах погода спокійна. Гарного дня!";
+            }
+
+            // Week
+            const wList = document.getElementById('week-list');
+            wList.innerHTML = '';
+            for(let i=0; i<7; i++) {
+                const dayCode = weatherCodes[daily.weather_code[i]] || {t: "Хмарно", i: "fa-cloud"};
+                wList.innerHTML += `<div class="w-row">
+                    <span style="width:35px;">${new Date(daily.time[i]).toLocaleDateString('uk-UA', {weekday: 'short'})}</span>
+                    <i class="fa-solid ${dayCode.i}" style="color:var(--blue); width:20px;"></i>
+                    <span style="flex:1; margin-left:15px; opacity:0.7;">${dayCode.t}</span>
+                    <b>${Math.round(daily.temperature_2m_max[i])}° / ${Math.round(daily.temperature_2m_min[i])}°</b>
+                </div>`;
+            }
+            renderHourly('temp', document.querySelector('.tab-btn'));
+        }
+
+        function renderHourly(mode, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const list = document.getElementById('hour-list');
+            list.innerHTML = '';
+            const now = new Date().getHours();
+            
+            for(let i=now; i<now+12; i++) {
+                const time = rawData.hourly.time[i].split('T')[1];
+                const hCode = weatherCodes[rawData.hourly.weather_code[i]] || {i: "fa-cloud"};
+                let val = mode === 'temp' ? `<b>${Math.round(rawData.hourly.temperature_2m[i])}°</b>` : `<span style="color:var(--blue); font-weight:bold;">${rawData.hourly.precipitation_probability[i]}%</span>`;
+                list.innerHTML += `<div class="h-card"><div>${time}</div><i class="fa-solid ${hCode.i}" style="margin:8px 0; color:var(--blue); opacity:0.6;"></i><br>${val}</div>`;
             }
         }
 
-        function setTab(mode, btn) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active');
-            const list = document.getElementById('hour-list');
-            list.innerHTML = '';
-
-            weather.h.forEach((h, i) => {
-                let html = `<div style="font-size:0.75rem; color:#999; margin-bottom:8px;">${h}</div>`;
-                if(mode === 'temp') {
-                    html += `<i class="fa-solid fa-snowflake" style="color:var(--blue); margin-bottom:5px;"></i><br><b>${weather.t[i]}°</b>`;
-                } else if(mode === 'precip') {
-                    html += `<div style="color:var(--blue); font-size:0.75rem; font-weight:bold;">${weather.pPct[i]}%</div>
-                             <div style="height:35px; display:flex; align-items:flex-end; justify-content:center; margin:4px 0;">
-                                <div style="width:12px; background:var(--blue); border-radius:3px; height:${weather.pVol[i]*6 + 2}px"></div>
-                             </div>
-                             <div style="font-size:0.6rem; opacity:0.8;">${weather.pType[i]}</div>`;
-                } else {
-                    html += `<i class="fa-solid fa-location-arrow" style="transform:rotate(45deg); color:var(--blue); margin:12px 0;"></i><br><b>${weather.w[i]}</b> <small>км/г</small>`;
-                }
-                list.innerHTML += `<div class="h-card">${html}</div>`;
-            });
-        }
-
-        window.onload = () => {
-            updateLiveDisplay();
-            // Рендер тижня
-            const weekDiv = document.getElementById('week-list');
-            week.forEach(d => {
-                weekDiv.innerHTML += `<div class="w-row">
-                    <span style="width:30px; font-weight:bold;">${d.d}</span>
-                    <div style="flex:1; display:flex; align-items:center; gap:10px; padding-left:15px;">
-                        <i class="fa-solid ${d.i}" style="color:var(--blue); width:20px; text-align:center;"></i>
-                        <span style="opacity:0.7; font-size:0.8rem;">${d.t}</span>
-                    </div>
-                    <span style="font-weight:bold;">${d.temp}</span>
-                </div>`;
-            });
-            setTab('temp', document.querySelector('.tab-btn'));
-            
-            // Оновлення кожну хвилину
-            setInterval(updateLiveDisplay, 60000);
-        };
+        window.onload = fetchWeatherData;
     </script>
 </body>
 </html>
-
