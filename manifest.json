@@ -1,0 +1,16 @@
+{
+  "name": "Погода Бережани Live",
+  "short_name": "Бережани",
+  "description": "Професійна метеостанція міста Бережани",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b1120",
+  "theme_color": "#0b1120",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1779/1779940.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
